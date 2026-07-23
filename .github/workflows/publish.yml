@@ -39,12 +39,15 @@ jobs:
           # A portable -march baseline per platform (never -march=native for a
           # distributed wheel). ORT is fetched to /tmp/ort by before-all and its
           # lib is put on the loader path so the repair step can vendor it.
+          # MACOSX_DEPLOYMENT_TARGET matches ONNX Runtime's macOS floor (13.3 for
+          # 1.20.x) so delocate can bundle its dylib; ignored on Linux.
           CIBW_ENVIRONMENT: >-
             ORT_VERSION=${{ env.ORT_VERSION }}
             ORT_ROOT=/tmp/ort
             CMAKE_ARGS="-DORT_ROOT=/tmp/ort -DCHAOS_ARCH=${{ matrix.arch }}"
             LD_LIBRARY_PATH=/tmp/ort/lib
             DYLD_LIBRARY_PATH=/tmp/ort/lib
+            MACOSX_DEPLOYMENT_TARGET=13.3
 
       - uses: actions/upload-artifact@v4
         with:

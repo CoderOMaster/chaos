@@ -44,6 +44,9 @@ add_library(chaos
   src/hnsw_index.cpp)
 target_include_directories(chaos PUBLIC include)
 target_link_libraries(chaos PUBLIC chaos_flags Threads::Threads PRIVATE chaos_core_flags)
+# Position-independent so this static lib can be linked into the pybind11 shared
+# module on Linux (required there; harmless in executables and on macOS).
+set_target_properties(chaos PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # --- core test (no model needed): SIMD math + top-k on numeric fixtures ---
 enable_testing()
