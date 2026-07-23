@@ -1,0 +1,56 @@
+[build-system]
+requires = ["scikit-build-core>=0.8", "pybind11>=2.12"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "chaos-search"
+version = "0.1.0"
+description = "CPU-only native semantic search (MiniLM + flat/HNSW) with a Python API"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "Keshav Arora", email = "keshavaroracs@gmail.com" }]
+keywords = ["semantic-search", "embeddings", "minilm", "hnsw", "vector-search", "edge"]
+dependencies = ["huggingface_hub>=0.20"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Text Processing :: Indexing",
+]
+
+[project.scripts]
+chaos = "chaos.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/keshavaroracs/chaos"
+
+[tool.scikit-build]
+cmake.version = ">=3.16"
+wheel.packages = ["python/chaos"]
+
+[tool.scikit-build.cmake.define]
+CHAOS_PYTHON = "ON"
+# ORT_ROOT is NOT pinned here. Local builds fall back to the CMake default
+# (/opt/homebrew/opt/onnxruntime); override with -DORT_ROOT=... or the CMAKE_ARGS
+# env var (CI does this after downloading ONNX Runtime per platform).
+
+# --- Wheel building for PyPI (cibuildwheel) ---
+# ONNX Runtime is downloaded per-platform in before-all and bundled into the
+# wheel by the repair step (delocate/auditwheel), so end users need no system
+# ONNX Runtime. Per-platform ORT_ROOT / CHAOS_ARCH / lib paths are set by the
+# publish workflow via CIBW_ENVIRONMENT. First real CI run may need URL/version
+# or manylinux-image tweaks.
+[tool.cibuildwheel]
+build = ["cp39-*", "cp310-*", "cp311-*", "cp312-*", "cp313-*"]
+skip = ["*-musllinux_*", "*_i686"]
+build-frontend = "build"
+before-all = "bash {project}/scripts/ci_fetch_onnxruntime.sh"
+
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
