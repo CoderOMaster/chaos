@@ -308,13 +308,13 @@ The only embedder is the real MiniLM model ([embedder_onnx.cpp](src/embedder_onn
 model embeds it), not a stand-in for the model. [engine.hpp](include/chaos/engine.hpp)
 is the high-level facade that both the benchmark and the Python SDK use.
 
-## Status
+## Roadmap
 
 - [x] SIMD distance (NEON / AVX2 / scalar), arena, timing
 - [x] exact flat index + SIMD/top-k unit test
 - [x] BERT WordPiece tokenizer (verified vs known ids) + ONNX Runtime MiniLM embedder
 - [x] HNSW index + recall test on real embeddings + fused end-to-end benchmark
-- [x] `Engine` facade + pybind11 module + MOSS-shaped Python SDK (sync `Client` + `AsyncClient`, sessions, upsert, local persistence)
+- [x] `Engine` facade + pybind11 module + Python SDK (sync `Client` + `AsyncClient`, sessions, upsert, local persistence)
 - [ ] request server (io_uring/epoll)
 - [ ] parallel/int8 HNSW build; multi-threaded sharded flat scan
 - [ ] thread pinning + mlock wired into the serving path (warmup is in the bench today)

@@ -5,8 +5,8 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "chaos-search"
 version = "0.1.0"
-description = "CPU-only native semantic search (MiniLM + flat/HNSW) with a Python API"
-readme = "README.md"
+description = "On-device semantic search (MiniLM + flat/HNSW) — native, local-first, no server or API keys"
+readme = "README.pypi.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [{ name = "Keshav Arora", email = "keshavaroracs@gmail.com" }]
