@@ -1,9 +1,11 @@
 // Correctness checks for the SIMD kernels and the flat index. Verifies the
 // vectorized dot product matches a scalar reference and that top-k search
 // agrees with an exhaustive brute-force ranking.
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <random>
 #include <vector>
 

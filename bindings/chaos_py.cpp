@@ -4,6 +4,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <cstdio>
 #include <string>
 
 #include "chaos/engine.hpp"
