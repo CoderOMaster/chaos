@@ -60,12 +60,25 @@ sub-10 ms end-to-end p99 at their respective scales — see [Benchmarks](benchma
 
 Python: `client.open(name, kind="flat" | "hnsw")`. C++: `FlatIndex` / `HnswIndex`.
 
+## Which models are supported
+
+chaos runs a *family* of models, not arbitrary ones. The embedding path fixes
+three things today: **ONNX** format (ONNX Runtime), **BERT WordPiece (uncased)**
+tokenization, and **mean-pooling** + L2-normalize. So it works with ONNX,
+WordPiece, mean-pooled BERT-style sentence encoders — `all-MiniLM-L6-v2` (the
+default), the E5 family, and most BERT-based `sentence-transformers` models —
+via `Client(model="<hf-repo>")`. It does **not** work with SentencePiece/BPE
+tokenizers, CLS-pooled models (results would be off), non-ONNX formats, or
+decoder LLMs. The [`Embedder`](../include/chaos/embedder.hpp) interface is
+pluggable, so configurable pooling / alternate tokenizers / other backends can
+be added. Full matrix: [Python SDK → Models](python-sdk.md#models).
+
 ## Why MiniLM stays full-precision
 
-The model is **not** quantized — chaos supports bring-your-own embedding models,
-so the speed comes from parallelism + SIMD on the GEMM (via ONNX Runtime), not
-from shrinking the model. Vector-side quantization (compressing the *stored*
-index) is a separate, orthogonal lever and doesn't touch the model.
+The model is **not** quantized — within the supported family you bring your own
+model, so the speed comes from parallelism + SIMD on the GEMM (via ONNX
+Runtime), not from shrinking the model. Vector-side quantization (compressing
+the *stored* index) is a separate, orthogonal lever and doesn't touch the model.
 
 ## A note on async
 

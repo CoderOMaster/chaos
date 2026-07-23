@@ -61,8 +61,20 @@ def resolve_model(
     if not quiet:
         print(f"chaos: downloading model '{model}' from {repo} "
               f"(~86 MB, first run only)…", file=sys.stderr, flush=True)
-    model_path = hf_hub_download(repo, mfile)
-    vocab_path = hf_hub_download(repo, vfile)
+    try:
+        model_path = hf_hub_download(repo, mfile)
+        vocab_path = hf_hub_download(repo, vfile)
+    except Exception as e:
+        raise RuntimeError(
+            f"Could not load '{model}': expected an ONNX export at '{mfile}' and a "
+            f"WordPiece '{vfile}' in the Hugging Face repo '{repo}', but they were "
+            f"not found ({type(e).__name__}).\n"
+            f"chaos supports ONNX, WordPiece-tokenized, mean-pooled BERT-family "
+            f"encoders (e.g. all-MiniLM-L6-v2, E5). SentencePiece/BPE models "
+            f"(Gemma, Jina, GTE, T5) are not supported. If the repo lays files out "
+            f"differently, pass model_file=/vocab_file= or explicit model_path=/"
+            f"vocab_path=. See docs/python-sdk.md#supported-models."
+        ) from e
     return model_path, vocab_path
 
 

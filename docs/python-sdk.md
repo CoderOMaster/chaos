@@ -139,6 +139,27 @@ Client(model="sentence-transformers/all-MiniLM-L6-v2")   # any HF repo (ONNX exp
 Client(model_path="…/model.onnx", vocab_path="…/vocab.txt")  # explicit, offline
 ```
 
+### Supported models
+
+The embedding path fixes three things, so chaos supports a *family* of models,
+not arbitrary ones:
+
+| | Requirement |
+|---|---|
+| Format | **ONNX** (ONNX Runtime) — not raw PyTorch / GGUF / safetensors |
+| Tokenizer | **BERT WordPiece, uncased** (`vocab.txt`, `[CLS]`/`[SEP]`) |
+| Pooling | **mean-pool** over `last_hidden_state` + L2-normalize |
+
+- ✅ ONNX BERT-family, WordPiece, mean-pooled sentence encoders: `all-MiniLM-L6-v2`
+  / `L12`, the **E5** family, most BERT-based `sentence-transformers` models.
+- ⚠️ CLS-pooled models (some **BGE** variants) tokenize fine but expect CLS
+  pooling, not mean — results would be off.
+- ❌ SentencePiece/BPE tokenizers (many GTE, T5/`sentence-t5`), non-ONNX formats,
+  decoder/generative LLMs.
+
+The C++ [`Embedder`](../include/chaos/embedder.hpp) interface is pluggable, so
+configurable pooling, alternate tokenizers, or additional backends can be added.
+
 ### `download_model`
 
 ```python

@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/chaos-search)](https://pypi.org/project/chaos-search/)
 [![Python](https://img.shields.io/pypi/pyversions/chaos-search)](https://pypi.org/project/chaos-search/)
-[![CI](https://github.com/keshavaroracs/chaos/actions/workflows/ci.yml/badge.svg)](https://github.com/keshavaroracs/chaos/actions/workflows/ci.yml)
+[![CI](https://github.com/CoderOMaster/chaos/actions/workflows/ci.yml/badge.svg)](https://github.com/CoderOMaster/chaos/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A single-binary, CPU-only semantic search runtime for **edge devices**, targeting
@@ -225,15 +225,39 @@ Pre-fetch for offline/first-run-instant (e.g. in a Docker build):
 python -m chaos download          # or: chaos download
 ```
 
+#### Which models are supported
+
+chaos runs a specific *family* of embedding models — not arbitrary ones. Three
+things are fixed in the embedding path today:
+
+| | Requirement |
+|---|---|
+| **Format** | **ONNX** (loaded via ONNX Runtime). Not raw PyTorch / GGUF / safetensors. |
+| **Tokenizer** | **BERT WordPiece, uncased** (`vocab.txt`, `[CLS]`/`[SEP]`). |
+| **Pooling** | **mean-pool** over `last_hidden_state` + L2-normalize. |
+
+- ✅ **Works:** ONNX BERT-family, WordPiece, mean-pooled sentence encoders —
+  `all-MiniLM-L6-v2` (default) and `L12`, the **E5** family, and most BERT-based
+  `sentence-transformers` models. Point at any with `Client(model="<hf-repo>")`
+  if the repo ships `onnx/model.onnx` + `vocab.txt`.
+- ⚠️ **Wrong results:** CLS-pooled models (some **BGE** variants) — they tokenize
+  fine but expect CLS pooling, not mean.
+- ❌ **Not supported:** SentencePiece/BPE tokenizers (many GTE, T5/`sentence-t5`),
+  non-ONNX formats, and decoder/generative LLMs.
+
+The [`Embedder`](include/chaos/embedder.hpp) interface is pluggable, so
+configurable pooling, alternate tokenizers, or other backends can be added — see
+[docs/concepts.md](docs/concepts.md) and [docs/cpp-api.md](docs/cpp-api.md).
+
 **Persistence.** Opened with a name, an index persists its documents to
 `~/.chaos/<name>.jsonl` and reloads them (re-embedding) when reopened by that
 name; unnamed indexes stay in-memory. `add` upserts by id (re-adding an id
 updates it). `Document.metadata` is returned on matches but not searched.
 
-Runnable example: [`examples/quickstart.py`](examples/quickstart.py). The clients
-wrap the native C++ [`Engine`](include/chaos/engine.hpp) facade
-([bindings](bindings/chaos_py.cpp)); `Engine`/`Hit` are also exposed for advanced
-low-level use.
+Runnable examples in [`examples/`](examples/) (basics, HNSW, persistence,
+metadata, async concurrency, low-level). The clients wrap the native C++
+[`Engine`](include/chaos/engine.hpp) facade ([bindings](bindings/chaos_py.cpp));
+`Engine`/`Hit` are also exposed for advanced low-level use.
 
 ## Build
 

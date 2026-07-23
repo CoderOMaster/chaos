@@ -20,8 +20,9 @@ async def main():
         Document(id="4", text="The orchestra rehearsed the final movement."),
     ])
 
-    queries = ["sleeping pet", "systems language", "nearest neighbor lookup",
-               "classical music", "afternoon sunlight", "memory safety"]
+    queries = ["a sleeping pet", "language without a garbage collector",
+               "finding nearest neighbors", "an orchestra performance",
+               "warm afternoon sunlight", "memory-safe systems programming"]
 
     t0 = time.perf_counter()
     results = await asyncio.gather(*(index.search(q, top_k=1) for q in queries))

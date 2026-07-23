@@ -27,7 +27,7 @@ classifiers = [
 chaos = "chaos.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/keshavaroracs/chaos"
+Homepage = "https://github.com/CoderOMaster/chaos"
 
 [tool.scikit-build]
 cmake.version = ">=3.16"
