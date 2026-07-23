@@ -38,6 +38,8 @@ class HnswIndex : public Index {
   void update(uint32_t id, const float* vec) override;
   void search(const float* query, size_t k, std::vector<SearchHit>& out,
               void* scratch, size_t scratch_bytes) const override;
+  void save(std::ostream& os) const override;
+  void load(std::istream& is) override;
 
   void set_ef_search(size_t ef) { params_.ef_search = ef; }
 

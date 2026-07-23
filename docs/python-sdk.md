@@ -51,9 +51,11 @@ open(
 ) -> Index
 ```
 
-Opens an index. With a `name` and a `data_dir`, documents persist to
-`<data_dir>/<name>.jsonl` and reload (re-embedding) when reopened by that name.
-The `hnsw_*` params are ignored for `kind="flat"`.
+Opens an index. With a `name` and a `data_dir`, the index persists its documents
+(`<data_dir>/<name>.jsonl`) and its vectors + HNSW graph
+(`<data_dir>/<name>.idx`); reopening by that name **loads the vectors directly,
+with no re-embedding** (near-instant, and needs no model to load). The `hnsw_*`
+params are ignored for `kind="flat"`.
 
 ---
 

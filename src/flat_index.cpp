@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <istream>
+#include <ostream>
 
 #include "chaos/distance.hpp"
 
@@ -39,6 +41,20 @@ void FlatIndex::update(uint32_t id, const float* vec) {
   float* dst = row(id);
   std::memcpy(dst, vec, dim_ * sizeof(float));
   l2_normalize(dst, dim_);  // exact replacement; search stays a bare dot product
+}
+
+void FlatIndex::save(std::ostream& os) const {
+  uint64_t n = count_;
+  os.write(reinterpret_cast<const char*>(&n), sizeof n);
+  os.write(reinterpret_cast<const char*>(data_), n * stride_ * sizeof(float));
+}
+
+void FlatIndex::load(std::istream& is) {
+  uint64_t n = 0;
+  is.read(reinterpret_cast<char*>(&n), sizeof n);
+  grow(n ? n : 1);
+  is.read(reinterpret_cast<char*>(data_), n * stride_ * sizeof(float));
+  count_ = n;
 }
 
 // Bounded top-k via a min-heap keyed on score. We keep the k best seen; the

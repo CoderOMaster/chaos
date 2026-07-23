@@ -67,8 +67,10 @@ matches = await index.search("deadlines", top_k=3)
   millions. Tune recall/latency with `index.ef_search = 128`.
 
 `add` upserts by id (re-adding an id updates it). Opened with a name, an index
-persists to `~/.chaos/<name>.jsonl` and reloads by that name; without a name it
-stays in memory. `Document.metadata` is returned with matches (not searched).
+saves its documents **and** its vectors/HNSW graph, so reopening by that name
+**loads instantly without re-embedding** (a corpus that took minutes to build
+reopens in a fraction of a second). Without a name it stays in memory.
+`Document.metadata` is returned with matches (not searched).
 
 ## Models
 

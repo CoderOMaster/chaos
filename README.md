@@ -249,10 +249,12 @@ The [`Embedder`](include/chaos/embedder.hpp) interface is pluggable, so
 configurable pooling, alternate tokenizers, or other backends can be added — see
 [docs/concepts.md](docs/concepts.md) and [docs/cpp-api.md](docs/cpp-api.md).
 
-**Persistence.** Opened with a name, an index persists its documents to
-`~/.chaos/<name>.jsonl` and reloads them (re-embedding) when reopened by that
-name; unnamed indexes stay in-memory. `add` upserts by id (re-adding an id
-updates it). `Document.metadata` is returned on matches but not searched.
+**Persistence.** Opened with a name, an index saves both its documents
+(`~/.chaos/<name>.jsonl`) and its **vectors + HNSW graph** (`~/.chaos/<name>.idx`).
+Reopening by that name **loads the vectors directly — no re-embedding** — so a
+corpus that took minutes to build reopens in a fraction of a second (and needs
+no model to load). Unnamed indexes stay in-memory. `add` upserts by id;
+`Document.metadata` is returned on matches but not searched.
 
 Runnable examples in [`examples/`](examples/) (basics, HNSW, persistence,
 metadata, async concurrency, low-level). The clients wrap the native C++

@@ -87,7 +87,8 @@ class Index:
         added, updated = self._engine.upsert_many(ids, texts)
         for d in docs:
             self._docs[d.id] = d
-        self._persist()
+        self._persist()        # metadata/text (jsonl)
+        self._persist_index()  # vectors + graph (.idx) — enables fast reload
         return added, updated
 
     def search(self, query: str, top_k: int = 10) -> List[Match]:
@@ -99,10 +100,18 @@ class Index:
         ]
 
     # --- persistence -----------------------------------------------------
+    # A named index persists two files side by side:
+    #   <name>.jsonl  — id/text/metadata (human-readable, holds metadata)
+    #   <name>.idx    — vectors + HNSW graph (binary), so reopen skips embedding
     def _path(self) -> Optional[Path]:
         if not self._name or not self._data_dir:
             return None
         return Path(self._data_dir).expanduser() / f"{self._name}.jsonl"
+
+    def _idx_path(self) -> Optional[Path]:
+        if not self._name or not self._data_dir:
+            return None
+        return Path(self._data_dir).expanduser() / f"{self._name}.idx"
 
     def _persist(self) -> None:
         path = self._path()
@@ -115,10 +124,15 @@ class Index:
                 f.write(json.dumps({"id": d.id, "text": d.text, "metadata": d.metadata}) + "\n")
         os.replace(tmp, path)  # atomic
 
-    def _reload(self) -> None:
-        path = self._path()
-        if path is None or not path.exists():
+    def _persist_index(self) -> None:
+        idx = self._idx_path()
+        if idx is None:
             return
+        idx.parent.mkdir(parents=True, exist_ok=True)
+        self._engine.save(str(idx))
+
+    @staticmethod
+    def _read_jsonl(path: Path) -> List[Document]:
         docs = []
         with open(path) as f:
             for line in f:
@@ -127,8 +141,32 @@ class Index:
                     continue
                 r = json.loads(line)
                 docs.append(Document(r["id"], r["text"], r.get("metadata", {})))
-        if docs:
-            self.add(docs)  # re-embeds and indexes
+        return docs
+
+    def _reload(self) -> None:
+        jsonl, idx = self._path(), self._idx_path()
+        if jsonl is None:
+            return
+        # Fast path: load vectors + graph from .idx (no re-embedding), and read
+        # the jsonl only for metadata.
+        if idx is not None and idx.exists() and jsonl.exists():
+            try:
+                self._engine.load(str(idx))
+                for d in self._read_jsonl(jsonl):
+                    self._docs[d.id] = d
+                return
+            except Exception:
+                self._docs.clear()  # corrupt/incompatible .idx -> rebuild below
+        # Fallback / upgrade: no (valid) .idx, but documents exist -> re-embed
+        # from the jsonl once (writes a fresh .idx via add() so next open is fast).
+        if jsonl.exists():
+            docs = self._read_jsonl(jsonl)
+            if docs:
+                import sys
+                print(f"chaos: no cached vectors for '{self._name}', embedding "
+                      f"{len(docs)} docs once (rebuilds {self._name}.idx)…",
+                      file=sys.stderr, flush=True)
+                self.add(docs)
 
 
 class Client:

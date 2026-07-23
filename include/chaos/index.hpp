@@ -4,6 +4,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <vector>
 
 namespace chaos {
@@ -32,6 +33,13 @@ class Index {
   // caller-provided arena memory to keep the hot path allocation-free.
   virtual void search(const float* query, size_t k, std::vector<SearchHit>& out,
                       void* scratch = nullptr, size_t scratch_bytes = 0) const = 0;
+
+  // Binary (de)serialization of the built index so it can be reloaded without
+  // re-embedding. `save` writes count + vectors (+ graph for HNSW); `load`
+  // repopulates an index freshly constructed with the same dim. Format is
+  // host-endian — a per-machine cache, not a portable interchange format.
+  virtual void save(std::ostream& os) const = 0;
+  virtual void load(std::istream& is) = 0;
 };
 
 }  // namespace chaos

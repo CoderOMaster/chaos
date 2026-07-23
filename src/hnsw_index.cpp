@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <istream>
+#include <ostream>
 #include <queue>
 
 #include "chaos/distance.hpp"
@@ -175,6 +177,65 @@ void HnswIndex::update(uint32_t id, const float* vec) {
   float* dst = row(id);
   std::memcpy(dst, vec, dim_ * sizeof(float));
   l2_normalize(dst, dim_);
+}
+
+void HnswIndex::save(std::ostream& os) const {
+  auto w = [&](const void* p, size_t n) { os.write(static_cast<const char*>(p), n); };
+  uint64_t n = count_;
+  w(&n, sizeof n);
+  w(data_, n * dim_ * sizeof(float));
+  int32_t maxl = max_level_;
+  uint32_t ep = entry_point_, efs = static_cast<uint32_t>(params_.ef_search);
+  w(&maxl, sizeof maxl);
+  w(&ep, sizeof ep);
+  w(&efs, sizeof efs);
+  for (uint64_t i = 0; i < n; ++i) {
+    int32_t lv = node_level_[i];
+    w(&lv, sizeof lv);
+  }
+  for (uint64_t i = 0; i < n; ++i) {
+    for (int lc = 0; lc <= node_level_[i]; ++lc) {
+      const auto& nb = links_[i][lc];
+      uint32_t cnt = static_cast<uint32_t>(nb.size());
+      w(&cnt, sizeof cnt);
+      if (cnt) w(nb.data(), cnt * sizeof(uint32_t));
+    }
+  }
+}
+
+void HnswIndex::load(std::istream& is) {
+  auto r = [&](void* p, size_t n) { is.read(static_cast<char*>(p), n); };
+  uint64_t n = 0;
+  r(&n, sizeof n);
+  grow_data(n ? n : 1);
+  r(data_, n * dim_ * sizeof(float));
+  count_ = n;
+  int32_t maxl = -1;
+  uint32_t ep = 0, efs = 0;
+  r(&maxl, sizeof maxl);
+  r(&ep, sizeof ep);
+  r(&efs, sizeof efs);
+  max_level_ = maxl;
+  entry_point_ = ep;
+  params_.ef_search = efs;
+  node_level_.resize(n);
+  for (uint64_t i = 0; i < n; ++i) {
+    int32_t lv = 0;
+    r(&lv, sizeof lv);
+    node_level_[i] = lv;
+  }
+  links_.assign(n, {});
+  for (uint64_t i = 0; i < n; ++i) {
+    links_[i].resize(node_level_[i] + 1);
+    for (int lc = 0; lc <= node_level_[i]; ++lc) {
+      uint32_t cnt = 0;
+      r(&cnt, sizeof cnt);
+      links_[i][lc].resize(cnt);
+      if (cnt) r(links_[i][lc].data(), cnt * sizeof(uint32_t));
+    }
+  }
+  vis_.assign(n, 0);
+  vis_epoch_ = 0;
 }
 
 void HnswIndex::search(const float* query, size_t k, std::vector<SearchHit>& out,

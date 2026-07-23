@@ -71,12 +71,14 @@ See **[Concepts](concepts.md)** for the trade-off and the crossover point.
 
 ## Persistence
 
-Open an index with a name and it persists to `~/.chaos/<name>.jsonl`, reloading
-(re-embedding) when reopened by that name. Unnamed indexes stay in-memory:
+Open an index with a name and it persists its documents (`~/.chaos/<name>.jsonl`)
+and its vectors + HNSW graph (`~/.chaos/<name>.idx`). Reopening by that name
+**loads the vectors directly — no re-embedding** — so a corpus that took minutes
+to build reopens in a fraction of a second. Unnamed indexes stay in-memory:
 
 ```python
 index = client.open()          # ephemeral, in-memory
-index = client.open("notes")   # persisted + reloaded by name
+index = client.open("notes")   # persisted; reopens instantly (no re-embed)
 ```
 
 ## Building the C++ side

@@ -45,6 +45,12 @@ PYBIND11_MODULE(_core, m) {
            "Return up to k Hits for the query, most similar first.")
       .def("set_ef_search", &Engine::set_ef_search, py::arg("ef"),
            "Tune HNSW recall/latency (no-op for the flat index).")
+      .def("save", &Engine::save, py::arg("path"),
+           py::call_guard<py::gil_scoped_release>(),
+           "Persist the built index (ids, text, vectors, HNSW graph) to a file.")
+      .def("load", &Engine::load, py::arg("path"),
+           py::call_guard<py::gil_scoped_release>(),
+           "Reload a saved index without re-embedding.")
       .def_property_readonly("dim", &Engine::dim)
       .def_property_readonly("is_hnsw", &Engine::is_hnsw)
       .def("__len__", &Engine::size);

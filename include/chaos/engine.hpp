@@ -49,6 +49,12 @@ class Engine {
   bool is_hnsw() const { return is_hnsw_; }
   void set_ef_search(size_t ef);  // HNSW recall/latency knob; no-op for flat
 
+  // Persist the built index (ids + text + vectors, plus the HNSW graph) so it
+  // can be reopened without re-embedding. `load` repopulates from such a file;
+  // the query embedder is still needed to embed queries afterward.
+  void save(const std::string& path) const;
+  void load(const std::string& path);
+
  private:
   std::unique_ptr<Embedder> emb_;
   std::unique_ptr<Index> index_;
