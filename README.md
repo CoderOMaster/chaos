@@ -1,7 +1,7 @@
 # chaos
 
 [![PyPI](https://img.shields.io/pypi/v/chaos-search)](https://pypi.org/project/chaos-search/)
-[![Python](https://img.shields.io/pypi/pyversions/chaos-search)](https://pypi.org/project/chaos-search/)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://pypi.org/project/chaos-search/)
 [![CI](https://github.com/CoderOMaster/chaos/actions/workflows/ci.yml/badge.svg)](https://github.com/CoderOMaster/chaos/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 

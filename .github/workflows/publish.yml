@@ -81,6 +81,9 @@ jobs:
           path: dist
           merge-multiple: true
       - uses: pypa/gh-action-pypi-publish@release/v1
-        # For a dry run, publish to TestPyPI instead:
-        # with:
+        with:
+          # Don't hard-fail if some files for this version are already on PyPI
+          # (e.g. a partial/re-run upload). Bump the version to publish changes.
+          skip-existing: true
+        # For a dry run, publish to TestPyPI instead, add:
         #   repository-url: https://test.pypi.org/legacy/
