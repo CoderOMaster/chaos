@@ -272,7 +272,7 @@ or `-DCHAOS_ARCH=x86-64-v3` (x86).
 ## Releasing to PyPI
 
 Publishing a GitHub Release runs [`.github/workflows/publish.yml`](.github/workflows/publish.yml),
-which builds wheels for macOS (arm64/x86_64) and Linux (x86_64/aarch64) with
+which builds wheels for macOS (arm64) and Linux (x86_64/aarch64) with
 [`cibuildwheel`](https://cibuildwheel.pypa.io) and uploads them via PyPI
 **Trusted Publishing** (OIDC — no API token). ONNX Runtime is downloaded per
 platform ([scripts/ci_fetch_onnxruntime.sh](scripts/ci_fetch_onnxruntime.sh)) and

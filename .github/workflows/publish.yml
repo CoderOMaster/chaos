@@ -29,7 +29,9 @@ jobs:
           - { os: ubuntu-latest,    label: linux-x86_64,  arch: "x86-64-v2" }
           - { os: ubuntu-24.04-arm, label: linux-aarch64, arch: "armv8-a" }
           - { os: macos-14,         label: macos-arm64,   arch: "armv8-a" }
-          - { os: macos-13,         label: macos-x86_64,  arch: "x86-64-v2" }
+          # Intel-Mac wheels are intentionally not built (GitHub retired the
+          # macos-13 Intel runner). To re-add, use label macos-15-intel:
+          # - { os: macos-15-intel, label: macos-x86_64,  arch: "x86-64-v2" }
     steps:
       - uses: actions/checkout@v4
 
